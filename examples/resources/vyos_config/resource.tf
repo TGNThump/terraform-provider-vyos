@@ -7,7 +7,7 @@ resource "vyos_config" "test" {
         action = "accept"
         state = {
           established = "enable"
-          related = "enable"
+          related     = "enable"
         }
       }
     }
