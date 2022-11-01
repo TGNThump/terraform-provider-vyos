@@ -23,7 +23,7 @@ terraform {
 
 provider "vyos" {
   endpoint = "https://vyos"
-  api_key = "abcdefg"
+  api_key  = "abcdefg"
 }
 ```
 
