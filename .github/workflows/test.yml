@@ -70,7 +70,16 @@ jobs:
           terraform_wrapper: false
       - run: go mod download
       - name: Start VyOS
-        run: docker run -d --privileged --name vyos -v ${{ github.workspace }}/.github/workflows/config.boot:/opt/vyatta/etc/config.boot.default -v /lib/modules:/lib/modules -p 443:443 foltik/vyos:rolling-latest /sbin/init
+        run: |
+          docker run -d --privileged \
+            --name vyos \
+            -v ${{ github.workspace }}/.github/workflows/config.boot:/opt/vyatta/etc/config.boot.default \
+            -v ${{ github.workspace }}/.github/workflows/selfsigned.pem:/etc/ssl/certs/ssl-cert-snakeoil.pem \
+            -v ${{ github.workspace }}/.github/workflows/selfsigned.key:/etc/ssl/private/ssl-cert-snakeoil.key \
+            -v /lib/modules:/lib/modules \
+            -p 443:443 \
+            foltik/vyos:rolling-latest \
+            /sbin/init
       - name: Wait for VyOS
         run: timeout 120 bash ${{ github.workspace }}/.github/workflows/wait-for-vyos.sh
       - env:
