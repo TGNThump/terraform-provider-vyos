@@ -81,6 +81,32 @@ func TestAccConfigResourceComplexFirewallRuleset(t *testing.T) {
 	})
 }
 
+func TestAccConfigResourceBinaryOption(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: testAccConfigResourceConfig("service ssh disable-host-validation", `jsonencode({})`),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("vyos_config.test", "id", "service ssh disable-host-validation"),
+					resource.TestCheckResourceAttr("vyos_config.test", "path", "service ssh disable-host-validation"),
+					resource.TestCheckResourceAttr("vyos_config.test", "value", `{}`),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:            "vyos_config.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{},
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func testAccConfigResourceConfig(path string, value string) string {
 	return fmt.Sprintf(`
 resource "vyos_config" "test" {

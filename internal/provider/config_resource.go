@@ -158,9 +158,25 @@ func (r *ConfigResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	tflog.Info(ctx, "Reading path "+data.Path.ValueString())
 
-	config, err := r.client.Config.Show(ctx, data.Path.ValueString())
+	components := strings.Split(data.Path.ValueString(), " ")
+	parentPath := strings.Join(components[0:len(components)-1], " ")
+	terminal := components[len(components)-1]
+
+	parent, err := r.client.Config.Show(ctx, parentPath)
 	if err != nil {
 		resp.Diagnostics.AddError("No", err.Error())
+		return
+	}
+
+	if parent == nil {
+		resp.Diagnostics.AddError("Parent of resource not found", "Parent not found")
+		return
+	}
+
+	config := parent.(map[string]any)[terminal]
+
+	if config == nil {
+		resp.Diagnostics.AddError("Resource not found", "Parent not found")
 		return
 	}
 
