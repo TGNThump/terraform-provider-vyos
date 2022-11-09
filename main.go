@@ -5,8 +5,8 @@ import (
 	"flag"
 	"log"
 
+	"github.com/bjw-s/terraform-provider-vyos/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-provider-vyos/internal/provider"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -35,7 +35,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/TGNThump/vyos",
+		Address: "registry.terraform.io/bjw-s/vyos",
 		Debug:   debug,
 	}
 
