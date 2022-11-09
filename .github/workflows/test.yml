@@ -4,10 +4,15 @@ name: Tests
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
 on:
+  workflow_dispatch:
   pull_request:
+    branches:
+      - main
     paths-ignore:
       - 'README.md'
   push:
+    branches:
+      - main
     paths-ignore:
       - 'README.md'
 
