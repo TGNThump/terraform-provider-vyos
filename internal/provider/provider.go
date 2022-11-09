@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 	"crypto/tls"
-	"github.com/foltik/vyos-client-go/client"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/foltik/vyos-client-go/client"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
