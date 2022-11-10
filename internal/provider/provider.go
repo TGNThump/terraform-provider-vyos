@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/TGNThump/terraform-provider-vyos/internal/vyos"
 	"github.com/foltik/vyos-client-go/client"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 
@@ -131,9 +132,10 @@ func (p *VyOSProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	httpClient := &http.Client{Transport: transport, Timeout: 10 * time.Minute}
 
 	apiClient := client.NewWithClient(httpClient, endpoint, api_key)
+	vyosConfig := vyos.New(apiClient)
 
-	resp.DataSourceData = apiClient
-	resp.ResourceData = apiClient
+	resp.DataSourceData = vyosConfig
+	resp.ResourceData = vyosConfig
 }
 
 func (p *VyOSProvider) Resources(ctx context.Context) []func() resource.Resource {
