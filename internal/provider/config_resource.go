@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/TGNThump/terraform-provider-vyos/internal/vyos"
 	"github.com/foltik/vyos-client-go/client"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -26,7 +27,7 @@ func NewConfigResource() resource.Resource {
 
 // ConfigResource defines the resource implementation.
 type ConfigResource struct {
-	client *client.Client
+	vyosConfig *vyos.VyosConfig
 }
 
 // ConfigResourceModel describes the resource data model.
@@ -77,7 +78,7 @@ func (r *ConfigResource) Configure(ctx context.Context, req resource.ConfigureRe
 		return
 	}
 
-	apiClient, ok := req.ProviderData.(*client.Client)
+	vyosConfig, ok := req.ProviderData.(*vyos.VyosConfig)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -88,7 +89,7 @@ func (r *ConfigResource) Configure(ctx context.Context, req resource.ConfigureRe
 		return
 	}
 
-	r.client = apiClient
+	r.vyosConfig = vyosConfig
 }
 
 func (r *ConfigResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -108,7 +109,7 @@ func (r *ConfigResource) Create(ctx context.Context, req resource.CreateRequest,
 	parentPath := strings.Join(components[0:len(components)-1], " ")
 	terminal := components[len(components)-1]
 
-	parent, err := r.client.Config.Show(ctx, parentPath)
+	parent, err := r.vyosConfig.Show(ctx, parentPath)
 	if err != nil {
 		resp.Diagnostics.AddError("No", err.Error())
 		return
@@ -133,7 +134,7 @@ func (r *ConfigResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	tflog.Info(ctx, "Setting path "+data.Path.ValueString()+" to value "+data.Value.ValueString())
 
-	err = r.client.Config.Set(ctx, data.Path.ValueString(), jsonValue)
+	err = r.vyosConfig.Set(ctx, data.Path.ValueString(), jsonValue)
 	if err != nil {
 		resp.Diagnostics.AddError("No", err.Error())
 		return
@@ -163,7 +164,7 @@ func (r *ConfigResource) Read(ctx context.Context, req resource.ReadRequest, res
 	parentPath := strings.Join(components[0:len(components)-1], " ")
 	terminal := components[len(components)-1]
 
-	parent, err := r.client.Config.Show(ctx, parentPath)
+	parent, err := r.vyosConfig.Show(ctx, parentPath)
 	if err != nil {
 		resp.Diagnostics.AddError("No", err.Error())
 		return
@@ -249,7 +250,7 @@ func (r *ConfigResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	tflog.Info(ctx, fmt.Sprintf("%v", payload))
 
-	_, err := r.client.Request(ctx, "configure", payload)
+	_, err := r.vyosConfig.ApiRequest(ctx, "configure", payload)
 	if err != nil {
 		resp.Diagnostics.AddError("No", err.Error())
 		return
@@ -273,7 +274,7 @@ func (r *ConfigResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	tflog.Info(ctx, "Deleting path "+data.Path.ValueString())
 
-	err := r.client.Config.Delete(ctx, data.Path.ValueString())
+	err := r.vyosConfig.Delete(ctx, data.Path.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("No", err.Error())
 		return
