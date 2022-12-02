@@ -11,8 +11,6 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0
 )
 
-// replace github.com/foltik/vyos-client-go => github.com/bjw-s/vyos-client-go v0.0.0-20221109125404-576b73bd2d71
-
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
