@@ -171,25 +171,24 @@ func (r *ConfigResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	if parent == nil {
-		resp.Diagnostics.AddError("Parent of resource not found", "Parent not found")
-		return
+		data.Value = types.StringValue("null")
+		resp.Diagnostics.AddWarning("Parent of resource not found", "Parent of resource not found")
+	} else {
+		config := parent.(map[string]any)[terminal]
+
+		if config == nil {
+			data.Value = types.StringValue("null")
+			resp.Diagnostics.AddWarning("Resource not found in parent", "Resource not found in parent")
+		} else {
+			jsonValue, err := json.Marshal(config)
+			if err != nil {
+				resp.Diagnostics.AddError("No", err.Error())
+				return
+			}
+
+			data.Value = types.StringValue(string(jsonValue[:]))
+		}
 	}
-
-	config := parent.(map[string]any)[terminal]
-
-	if config == nil {
-		resp.Diagnostics.AddError("Resource not found", "Parent not found")
-		return
-	}
-
-	jsonValue, err := json.Marshal(config)
-	if err != nil {
-		resp.Diagnostics.AddError("No", err.Error())
-		return
-	}
-
-	data.Value = types.StringValue(string(jsonValue[:]))
-
 	tflog.Info(ctx, "Read path "+data.Path.ValueString()+" with value "+data.Value.ValueString())
 
 	// Save updated data into Terraform state
