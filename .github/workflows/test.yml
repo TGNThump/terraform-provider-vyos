@@ -89,6 +89,7 @@ jobs:
           docker run -d --privileged \
             --name vyos \
             -v ${{ github.workspace }}/.ci/vyos/config.boot:/opt/vyatta/etc/config.boot.default \
+            -v ${{ github.workspace }}/.ci/vyos/config.boot:/config/config.boot \
             -v ${{ github.workspace }}/.ci/vyos/selfsigned.pem:/etc/ssl/certs/ssl-cert-snakeoil.pem \
             -v ${{ github.workspace }}/.ci/vyos/selfsigned.key:/etc/ssl/private/ssl-cert-snakeoil.key \
             -v /lib/modules:/lib/modules \
