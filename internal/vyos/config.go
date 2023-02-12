@@ -12,15 +12,29 @@ import (
 
 type VyosConfig struct {
 	apiClient    *client.Client
+	skipSaving   bool
+	saveFile     string
 	mutex        sync.Mutex
 	cachedConfig *map[string]any
 }
 
-func New(apiClient *client.Client) *VyosConfig {
+func New(apiClient *client.Client, skipSaving bool, saveFile string) *VyosConfig {
 	config := &VyosConfig{
-		apiClient: apiClient,
+		skipSaving: skipSaving,
+		saveFile:   saveFile,
+		apiClient:  apiClient,
 	}
 	return config
+}
+
+func (vc *VyosConfig) SaveIfRequired(ctx context.Context) error {
+	if vc.skipSaving {
+		return nil
+	} else if vc.saveFile == "" {
+		return vc.apiClient.Config.Save(ctx)
+	} else {
+		return vc.apiClient.Config.SaveFile(ctx, vc.saveFile)
+	}
 }
 
 func (vc *VyosConfig) getRemoteConfig(ctx context.Context) (map[string]any, error) {
@@ -85,12 +99,32 @@ func (vc *VyosConfig) Show(ctx context.Context, path string) (any, error) {
 
 func (vc *VyosConfig) Set(ctx context.Context, path string, value any) error {
 	vc.invalidateConfigCache()
-	return vc.apiClient.Config.Set(ctx, path, value)
+
+	err := vc.apiClient.Config.Set(ctx, path, value)
+	if err != nil {
+		return err
+	}
+
+	err = vc.SaveIfRequired(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (vc *VyosConfig) Delete(ctx context.Context, path string) error {
 	vc.invalidateConfigCache()
-	return vc.apiClient.Config.Delete(ctx, path)
+	err := vc.apiClient.Config.Delete(ctx, path)
+	if err != nil {
+		return err
+	}
+
+	err = vc.SaveIfRequired(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (vc *VyosConfig) ApiRequest(ctx context.Context, endpoint string, payload any) (any, error) {
