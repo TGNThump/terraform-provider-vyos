@@ -93,7 +93,7 @@ jobs:
             -v ${{ github.workspace }}/.ci/vyos/selfsigned.key:/etc/ssl/private/ssl-cert-snakeoil.key \
             -v /lib/modules:/lib/modules \
             -p 443:443 \
-            --tmpfs /config 
+            --tmpfs /config \
             foltik/vyos:rolling-latest \
             /sbin/init
 
