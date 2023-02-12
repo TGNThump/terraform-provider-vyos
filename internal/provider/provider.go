@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/TGNThump/terraform-provider-vyos/internal/vyos"
@@ -30,8 +31,10 @@ type VyOSProvider struct {
 
 // VyOSProviderModel describes the provider data model.
 type VyOSProviderModel struct {
-	Endpoint types.String `tfsdk:"endpoint"`
-	ApiKey   types.String `tfsdk:"api_key"`
+	Endpoint   types.String `tfsdk:"endpoint"`
+	ApiKey     types.String `tfsdk:"api_key"`
+	SkipSaving types.Bool   `tfsdk:"skip_saving"`
+	SaveFile   types.String `tfsdk:"save_file"`
 }
 
 func (p *VyOSProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -50,6 +53,14 @@ func (p *VyOSProvider) Schema(ctx context.Context, request provider.SchemaReques
 				MarkdownDescription: "API Key for the VyOS HTTP API",
 				Optional:            true,
 				Sensitive:           true,
+			},
+			"skip_saving": schema.BoolAttribute{
+				Optional:            true,
+				MarkdownDescription: "Set to true to skip saving the config to disk.",
+			},
+			"save_file": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "Remote file path to save the config too.",
 			},
 		},
 	}
@@ -89,6 +100,20 @@ func (p *VyOSProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 	endpoint := os.Getenv("VYOS_ENDPOINT")
 	api_key := os.Getenv("VYOS_API_KEY")
+	save_file := os.Getenv("VYOS_SAVE_FILE")
+	skip_saving := false
+	skip_saving_str := os.Getenv("VYOS_SKIP_SAVING")
+	if skip_saving_str != "" {
+		var err error = nil
+		skip_saving, err = strconv.ParseBool(skip_saving_str)
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("skip_saving"),
+				"Unable to parse VYOS_SKIP_SAVING",
+				"The provider cannot create the VyOS API client as there is an invalid value for the VYOS_SKIP_SAVING environment value.",
+			)
+		}
+	}
 
 	if !config.Endpoint.IsNull() {
 		endpoint = config.Endpoint.ValueString()
@@ -96,6 +121,14 @@ func (p *VyOSProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 	if !config.ApiKey.IsNull() {
 		api_key = config.ApiKey.ValueString()
+	}
+
+	if !config.SaveFile.IsNull() {
+		save_file = config.SaveFile.ValueString()
+	}
+
+	if !config.SkipSaving.IsNull() {
+		skip_saving = config.SkipSaving.ValueBool()
 	}
 
 	if endpoint == "" {
@@ -127,7 +160,7 @@ func (p *VyOSProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	httpClient := &http.Client{Transport: transport, Timeout: 10 * time.Minute}
 
 	apiClient := client.NewWithClient(httpClient, endpoint, api_key)
-	vyosConfig := vyos.New(apiClient)
+	vyosConfig := vyos.New(apiClient, skip_saving, save_file)
 
 	resp.DataSourceData = vyosConfig
 	resp.ResourceData = vyosConfig

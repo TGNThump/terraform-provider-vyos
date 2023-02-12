@@ -34,3 +34,5 @@ provider "vyos" {
 
 - `api_key` (String, Sensitive) API Key for the VyOS HTTP API
 - `endpoint` (String) Endpoint of the VyOS HTTP API
+- `save_file` (String) Remote file path to save the config too.
+- `skip_saving` (Boolean) Set to true to skip saving the config to disk.
