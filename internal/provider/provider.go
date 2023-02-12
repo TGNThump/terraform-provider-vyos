@@ -9,19 +9,16 @@ import (
 
 	"github.com/TGNThump/terraform-provider-vyos/internal/vyos"
 	"github.com/foltik/vyos-client-go/client"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure VyOSProvider satisfies various provider interfaces.
 var _ provider.Provider = &VyOSProvider{}
-var _ provider.ProviderWithMetadata = &VyOSProvider{}
 
 // VyOSProvider defines the provider implementation.
 type VyOSProvider struct {
@@ -42,22 +39,20 @@ func (p *VyOSProvider) Metadata(ctx context.Context, req provider.MetadataReques
 	resp.Version = p.version
 }
 
-func (p *VyOSProvider) GetSchema(ctx context.Context) (tfsdk.Schema, diag.Diagnostics) {
-	return tfsdk.Schema{
-		Attributes: map[string]tfsdk.Attribute{
-			"endpoint": {
+func (p *VyOSProvider) Schema(ctx context.Context, request provider.SchemaRequest, response *provider.SchemaResponse) {
+	response.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"endpoint": schema.StringAttribute{
 				MarkdownDescription: "Endpoint of the VyOS HTTP API",
 				Optional:            true,
-				Type:                types.StringType,
 			},
-			"api_key": {
+			"api_key": schema.StringAttribute{
 				MarkdownDescription: "API Key for the VyOS HTTP API",
 				Optional:            true,
 				Sensitive:           true,
-				Type:                types.StringType,
 			},
 		},
-	}, nil
+	}
 }
 
 func (p *VyOSProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
