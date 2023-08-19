@@ -44,5 +44,3 @@ resource "vyos_config" "test" {
 ### Read-Only
 
 - `id` (String) Configuration identifier
-
-
