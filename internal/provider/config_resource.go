@@ -168,14 +168,14 @@ func (r *ConfigResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	if parent == nil {
-		resp.Diagnostics.AddError("Parent of resource not found", "Parent not found")
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
 	config := parent.(map[string]any)[terminal]
 
 	if config == nil {
-		resp.Diagnostics.AddError("Resource not found", "Parent not found")
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
